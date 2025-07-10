@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dev Prompts</title>
+  <style>
+    body {
+      background: linear-gradient(to right, #f953c6, #b91d73);
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 30px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 3em;
+      margin-bottom: 10px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 25px;
+      border-radius: 15px;
+    }
+
+    select, button, input, textarea {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 8px;
+      font-size: 1em;
+    }
+
+    button {
+      background: white;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .typing {
+      border-right: 2px solid white;
+      white-space: nowrap;
+      overflow: hidden;
+      animation: typing 3s steps(40, end), blink .75s step-end infinite;
+    }
+
+    @keyframes typing {
+      from { width: 0 }
+      to { width: 100% }
+    }
+
+    @keyframes blink {
+      50% { border-color: transparent }
+    }
+
+    .tag {
+      display: inline-block;
+      background: #fff;
+      color: #000;
+      padding: 5px 10px;
+      margin: 4px 4px 10px 0;
+      border-radius: 20px;
+      font-size: 0.9em;
+      cursor: pointer;
+    }
+
+    .tag:hover {
+      background: #eee;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 0.9em;
+      color: #ffe;
+    }
+
+    #suggestions div {
+      background: white;
+      color: black;
+      padding: 8px 12px;
+      cursor: pointer;
+      border-bottom: 1px solid #ccc;
+    }
+
+    #suggestions {
+      border-radius: 10px;
+      overflow: hidden;
+      display: none;
+    }
+
+  </style>
+</head>
+<body>
+
+  <h1>Dev Prompts</h1>
+  <div class="container">
+
+    <!-- 🔍 Autocomplete Search -->
+    <form method="POST" id="searchForm">
+      <input type="text" id="searchInput" name="search" placeholder="Search prompts..." value="{{ query }}" autocomplete="off">
+      <div id="suggestions"></div>
+      <button type="submit">🔍 Search</button>
+    </form>
+
+    <!-- 🎯 Prompt Selector -->
+    <form method="POST">
+      <label>Select Prompt:</label>
+      <select name="prompt_type">
+        {% for name in prompts %}
+          <option value="{{ name }}">{{ name }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit">🎯 Generate Prompt</button>
+    </form>
+
+    {% if result %}
+    <h3>✨ Generated Prompt:</h3>
+    <p class="typing">{{ result }}</p>
+    {% endif %}
+
+    <hr>
+
+    <h2>🙋 FAQs</h2>
+    <div style="text-align: center; margin-top: 20px;">
+      <a href="/faqs" style="color:white; text-decoration: underline;">📖 View All FAQs</a>
+    </div>
+
+    <hr>
+
+    <h2>💬 Send Your Feedback or Prompt Idea</h2>
+
+    <div>
+      <strong>Suggestions:</strong><br/>
+      <span class="tag" onclick="insertSuggestion('Add AI prompt for Instagram captions')">📸 Instagram Caption Prompts</span>
+      <span class="tag" onclick="insertSuggestion('Include blog/article writing prompts')">📝 Blog Writing Prompts</span>
+      <span class="tag" onclick="insertSuggestion('Dark mode and font options')">🌙 Dark Mode Feature</span>
+      <span class="tag" onclick="insertSuggestion('Real-time preview of prompts')">⚡ Prompt Preview Panel</span>
+    </div>
+
+    <form method="POST">
+      <input type="text" name="idea" placeholder="Your idea for a new prompt 💡" required id="ideaInput">
+      <textarea name="feedback" placeholder="Your feedback..." rows="3" required></textarea>
+      <button type="submit" name="feedback">📩 Submit Feedback</button>
+    </form>
+
+    <footer>
+      <p>Created by <strong>mughal.dev</strong> | ❤️ Dev Prompts</p>
+    </footer>
+
+    <div style="text-align: center; margin-top: 30px;">
+      <p>🚀 Join our WhatsApp Channel <strong>UnKnOwN</strong> — <em>300+ members</em></p>
+      <a href="https://whatsapp.com/channel/0029VbANArBK5cDAOxxvSz1u" target="_blank"
+         style="display: inline-block; padding: 12px 25px; font-size: 1em; background-color: #25D366;
+                color: white; border-radius: 50px; font-weight: bold; text-decoration: none;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: transform 0.3s;">
+        💬 Join UnKnOwN on WhatsApp
+      </a>
+    </div>
+
+  </div>
+
+  <script>
+    const promptNames = {{ prompts | tojson }};
+    const input = document.getElementById('searchInput');
+    const suggestionsBox = document.getElementById('suggestions');
+
+    input.addEventListener('input', function () {
+      const val = this.value.toLowerCase();
+      suggestionsBox.innerHTML = '';
+      if (val.length === 0) {
+        suggestionsBox.style.display = 'none';
+        return;
+      }
+
+      const matches = Object.keys(promptNames).filter(name =>
+        name.toLowerCase().includes(val)
+      );
+
+      matches.forEach(match => {
+        const div = document.createElement('div');
+        div.textContent = match;
+        div.addEventListener('click', () => {
+          input.value = match;
+          suggestionsBox.style.display = 'none';
+          document.getElementById('searchForm').submit();
+        });
+        suggestionsBox.appendChild(div);
+      });
+
+      suggestionsBox.style.display = matches.length ? 'block' : 'none';
+    });
+
+    document.addEventListener('click', function (e) {
+      if (!suggestionsBox.contains(e.target) && e.target !== input) {
+        suggestionsBox.style.display = 'none';
+      }
+    });
+
+    function insertSuggestion(text) {
+      document.getElementById('ideaInput').value = text;
+    }
+  </script>
+
+</body>
+</html>
